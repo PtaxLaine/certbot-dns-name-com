@@ -93,5 +93,5 @@ if __name__ == '__main__':
         j = ncd.list_records()
 
         for record in j['records']:
-            if record['host'] == '_acme-challenge':
+            if record['host'] == data['host']:
                 ncd.del_record(record['id'])
