@@ -1,16 +1,19 @@
 #!/bin/bash
+set -e
 paction=$1
 
 if [[ "$paction" != "clean" ]]; then
 	paction="add"
 fi
 
-pythoncmd="/path/to/venv/bin/python3"
+pythoncmd="/bin/env python3"
+source_dir="$(dirname ${BASH_SOURCE[0]})"
+script="$source_dir/name_com_dns.py"
 
 echo $CERTBOT_DOMAIN
 echo $CERTBOT_VALIDATION
 
-$pythoncmd '/path/to/name_com_dns.py' $paction $CERTBOT_DOMAIN $CERTBOT_VALIDATION >>"/var/log/certd.log"
+$pythoncmd $script $paction $CERTBOT_DOMAIN $CERTBOT_VALIDATION | logger -t certbot_name_com
 
 if [[ "$paction" == "add" ]]; then
         # DNS TXT f
