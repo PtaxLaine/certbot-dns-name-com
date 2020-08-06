@@ -1,3 +1,4 @@
+#!/bin/env python3
 import sys
 import json
 import requests
@@ -5,9 +6,11 @@ import requests
 
 class NameComDNS:
     def __init__(self, domain_name):
-        self.username = 'username at name.com'
-        self.token = 'token'
+        self.username = None # username at name.com
+        self.token = None # name.com API access token
         self.domain_name = domain_name
+        if self.username is None or self.token is None:
+            raise Exception("Name.com API access username or token not specified")
 
     def list_records(self):
         url = 'https://api.name.com/v4/domains/%s/records' % self.domain_name
@@ -21,7 +24,7 @@ class NameComDNS:
         if r.status_code == 200 or r.status_code == 201:
             print(r.json())
         else:
-            print('%s: %s' % (r.status_code, r.content))
+            raise Exception('%s: %s' % (r.status_code, r.content))
 
     def del_record(self, record_id):
         url = 'https://api.name.com/v4/domains/%s/records/%s' % (self.domain_name, record_id)
@@ -54,6 +57,3 @@ if __name__ == '__main__':
         for record in j['records']:
             if record['host'] == '_acme-challenge':
                 ncd.del_record(record['id'])
-
-
-
