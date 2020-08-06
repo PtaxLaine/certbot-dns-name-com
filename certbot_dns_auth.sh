@@ -13,7 +13,17 @@ script="$source_dir/name_com_dns.py"
 echo $CERTBOT_DOMAIN
 echo $CERTBOT_VALIDATION
 
-$pythoncmd $script $paction $CERTBOT_DOMAIN $CERTBOT_VALIDATION | logger -t certbot_name_com
+if [[ -z "${CERTBOT_NAME_COM_USERNAME}" ]]; then
+	echo "CERTBOT_NAME_COM_USERNAME environment variables is empty"
+	exit -1
+fi
+
+if [[ -z "${CERTBOT_NAME_COM_TOKEN}" ]]; then
+	echo "CERTBOT_NAME_COM_TOKEN environment variables is empty"
+	exit -1
+fi
+
+$pythoncmd $script $paction $CERTBOT_DOMAIN $CERTBOT_VALIDATION $CERTBOT_NAME_COM_USERNAME $CERTBOT_NAME_COM_TOKEN | logger -t certbot_name_com
 
 if [[ "$paction" == "add" ]]; then
         # DNS TXT f

@@ -5,12 +5,10 @@ import requests
 
 
 class NameComDNS:
-    def __init__(self, domain_name):
-        self.username = None # username at name.com
-        self.token = None # name.com API access token
+    def __init__(self, domain_name, username, token):
         self.domain_name = domain_name
-        if self.username is None or self.token is None:
-            raise Exception("Name.com API access username or token not specified")
+        self.username = username
+        self.token = token
 
     def list_records(self):
         url = 'https://api.name.com/v4/domains/%s/records' % self.domain_name
@@ -68,7 +66,7 @@ def split_zone_and_host(suffix_list, domain):
 
 
 if __name__ == '__main__':
-    file_name, cmd, certbot_domain, certbot_validation = sys.argv
+    file_name, cmd, certbot_domain, certbot_validation, name_com_username, name_com_token = sys.argv
 
     suffix_list = receive_suffix_list()
     (host_name, zone_name) = split_zone_and_host(suffix_list, certbot_domain)
@@ -86,7 +84,7 @@ if __name__ == '__main__':
             'fqdn': '_acme-challenge.%s.%s' % (host_name, zone_name),
         })
 
-    ncd = NameComDNS(zone_name)
+    ncd = NameComDNS(zone_name, name_com_username, name_com_token)
 
     if cmd == 'add':
         ncd.create_record(data)

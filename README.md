@@ -3,8 +3,11 @@ A certbot DNS plugin for name.com
 Usage:
 
 check:
-$ certbot-auto renew --cert-name yourdomain.com --manual-auth-hook /path/to/certbot_dns_auth.sh --dry-run
+$ CERTBOT_NAME_COM_USERNAME=you_name_com_accout \
+CERTBOT_NAME_COM_TOKEN=you_name_com_api_token \
+certbot-auto renew --cert-name yourdomain.com --manual-auth-hook /path/to/certbot_dns_auth.sh --dry-run
 
 renew:
-$ certbot-auto renew --cert-name yourdomain.com --manual-auth-hook /path/to/certbot_dns_auth.sh
-
+$ CERTBOT_NAME_COM_USERNAME=you_name_com_accout \
+CERTBOT_NAME_COM_TOKEN=you_name_com_api_token \
+certbot-auto renew --cert-name yourdomain.com --manual-auth-hook /path/to/certbot_dns_auth.sh
