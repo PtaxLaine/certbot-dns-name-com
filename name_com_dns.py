@@ -33,20 +33,60 @@ class NameComDNS:
         print(r.json())
 
 
-if __name__ == '__main__':
+def receive_suffix_list():
+    req = requests.get('https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat')
+    req.raise_for_status()
 
+    li = req.text.split('\n')
+    li = filter(lambda row: not row.startswith('//'), li)
+    li = map(lambda row: row.strip(), li)
+    li = filter(lambda row: row, li)
+    li = map(lambda row: row[2:] if row.startswith('*.') else row, li)
+    li = map(lambda row: row.encode("idna"), li)
+    li = map(lambda row: row.decode("utf-8"), li)
+    li = map(lambda row: row.lower(), li)
+
+    return list(li)
+
+
+def split_zone_and_host(suffix_list, domain):
+    domain = domain.lower().encode("idna").decode("utf-8").lower()
+
+    candidate = None
+    for suffix in suffix_list:
+        if domain.endswith(f'.{suffix}'):
+            if candidate is None or len(candidate) < len(suffix):
+                candidate = suffix
+
+    if candidate:
+        pos = domain[:-(1 + len(candidate))].rfind('.') + 1
+        zone_name = domain[pos:]
+        host_name = domain[:-1-len(zone_name)] if zone_name != domain else None
+        return (host_name, zone_name)
+    else:
+        raise Exception("public zone suffix not found for `%s`" % domain)
+
+
+if __name__ == '__main__':
     file_name, cmd, certbot_domain, certbot_validation = sys.argv
 
+    suffix_list = receive_suffix_list()
+    (host_name, zone_name) = split_zone_and_host(suffix_list, certbot_domain)
     data = {
-        'domainName': 'lonelyassistant.net',
+        'domainName': zone_name,
         'host': '_acme-challenge',
-        'fqdn': '_acme-challenge.lonelyassistant.net',
+        'fqdn': '_acme-challenge.%s' % zone_name,
         'type': 'TXT',
         'answer': certbot_validation,
         'ttl': 300,
     }
+    if host_name is not None:
+        data.update({
+            'host': '_acme-challenge.%s' % host_name,
+            'fqdn': '_acme-challenge.%s.%s' % (host_name, zone_name),
+        })
 
-    ncd = NameComDNS(certbot_domain)
+    ncd = NameComDNS(zone_name)
 
     if cmd == 'add':
         ncd.create_record(data)
